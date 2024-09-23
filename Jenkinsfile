@@ -22,8 +22,8 @@ pipeline {
                 chmod +x /var/snap/jenkins/4742/workspace/flask-test/myenvnew/bin/activate*
                 chmod +x /var/snap/jenkins/4742/workspace/flask-test/myenvnew/bin/Activate*
                 ./${VIRTUAL_ENV}/bin/activate || { echo "failed to activate"; exit 1; }
-                pip install --upgrade pip
-                pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
+                /var/snap/jenkins/4742/workspace/flask-test/myenvnew/bin/pip install --upgrade pip
+                /var/snap/jenkins/4742/workspace/flask-test/myenvnew/bin/pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
 
                 '''
             }
@@ -70,7 +70,7 @@ pipeline {
         always {
             echo 'Cleaning up environment...'
             sh '''
-            rm -rf ${VIRTUAL_ENV}
+            #rm -rf ${VIRTUAL_ENV}
             docker stop ${IMAGE_NAME}_container || echo "No running container to stop"
             docker rm ${IMAGE_NAME}_container || echo "No container to remove"
             '''
