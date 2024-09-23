@@ -15,9 +15,10 @@ pipeline {
         stage('Set up Python Environment') {
             steps {
                 sh '''
-                python3.11 -m venv myenv
+                python3.11 -m venv myenv || { echo "Failed to create virtual environment"; exit 1; }
                 source myenv/bin/activate
-                pip install -r requirements.txt
+                pip install --upgrade pip  # Upgrade pip for compatibility
+                pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
                 '''
             }
         }
@@ -26,22 +27,20 @@ pipeline {
             steps {
                 sh '''
                 source myenv/bin/activate
-                pytest test_app.py --disable-warnings
+                pytest test_app.py --disable-warnings || { echo "Unit tests failed"; exit 1; }
                 '''
             }
         }
 
         stage('Build Docker Image') {
             when {
-                // Only build Docker image if the tests pass
                 expression {
                     currentBuild.result == null || currentBuild.result == 'SUCCESS'
                 }
             }
             steps {
-                // Build Docker image
                 script {
-                    docker.build("${IMAGE_NAME}")
+                    docker.build("${IMAGE_NAME}") || { echo "Docker build failed"; exit 1; }
                 }
             }
         }
@@ -53,9 +52,8 @@ pipeline {
                 }
             }
             steps {
-                // Run the Docker container
                 sh """
-                docker run -d -p 5000:5000 ${IMAGE_NAME}
+                docker run -d -p 5000:5000 --name ${IMAGE_NAME}_container ${IMAGE_NAME} || { echo "Failed to run Docker container"; exit 1; }
                 """
             }
         }
@@ -63,8 +61,13 @@ pipeline {
 
     post {
         always {
-            // Clean up virtual environment
-            sh 'rm -rf myenv'
+            echo 'Cleaning up environment...'
+            // Clean up virtual environment and docker container
+            sh '''
+            rm -rf myenv
+            docker stop ${IMAGE_NAME}_container || echo "No running container to stop"
+            docker rm ${IMAGE_NAME}_container || echo "No container to remove"
+            '''
         }
         success {
             echo 'Pipeline succeeded! Unit tests passed and Docker container created.'
