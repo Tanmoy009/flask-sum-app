@@ -15,8 +15,8 @@ pipeline {
         stage('Set up Python Environment') {
             steps {
                 sh '''
-                python3.11 -m venv myenv || { echo "Failed to create virtual environment"; exit 1; }
-                source myenv/bin/activate
+                python3.11 -m venv myenv1 || { echo "Failed to create virtual environment"; exit 1; }
+                source myenv1/bin/activate
                 pip install --upgrade pip  # Upgrade pip for compatibility
                 pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
                 '''
@@ -26,7 +26,7 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 sh '''
-                source myenv/bin/activate
+                source myenv1/bin/activate
                 pytest test_app.py --disable-warnings || { echo "Unit tests failed"; exit 1; }
                 '''
             }
@@ -62,9 +62,8 @@ pipeline {
     post {
         always {
             echo 'Cleaning up environment...'
-            // Clean up virtual environment and docker container
             sh '''
-            rm -rf myenv
+            rm -rf myenv1
             docker stop ${IMAGE_NAME}_container || echo "No running container to stop"
             docker rm ${IMAGE_NAME}_container || echo "No container to remove"
             '''
