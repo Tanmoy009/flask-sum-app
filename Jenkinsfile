@@ -18,11 +18,6 @@ pipeline {
         stage('Set up Python Environment') {
             steps {
                 sh '''
-                python3.11 -m venv ${VIRTUAL_ENV} || { echo "Failed to create virtual environment"; exit 1; }
-                cd /var/snap/jenkins/4742/workspace/flask-test
-                echo `which python`
-                echo `python 3.11 --version`
-                source ${VIRTUAL_ENV}/bin/activate || { echo "failed to activate"; exit 1; }
                 pip install pip  
                 pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
 
