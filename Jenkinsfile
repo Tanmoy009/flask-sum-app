@@ -45,8 +45,10 @@ pipeline {
                 }
             }
             steps {
-                script {
-                    docker.build("${IMAGE_NAME}", ".") ||{echo "docker bild fail"}
+                
+                sh '''
+                docker build -t ${IMAGE_NAME} . || { echo "Docker build failed"; exit 1; }
+                '''
                 }
             }
         }
