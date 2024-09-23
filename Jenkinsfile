@@ -22,7 +22,7 @@ pipeline {
                 chmod +x /var/snap/jenkins/4742/workspace/flask-test/myenvnew/bin/activate*
                 chmod +x /var/snap/jenkins/4742/workspace/flask-test/myenvnew/bin/Activate*
                 ./${VIRTUAL_ENV}/bin/activate || { echo "failed to activate"; exit 1; }
-                /var/snap/jenkins/4742/workspace/flask-test/myenvnew/bin/activate/pip3.11 install --upgrade pip  
+                /var/snap/jenkins/4742/workspace/flask-test/myenvnew/bin/activate/pip3 install --upgrade pip  
                 pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
 
                 '''
