@@ -69,7 +69,7 @@ pipeline {
         always {
             echo 'Cleaning up environment...'
             sh '''
-            rm -rf ${VIRTUAL_ENV}
+            #rm -rf ${VIRTUAL_ENV}
             docker stop ${IMAGE_NAME}_container || echo "No running container to stop"
             docker rm ${IMAGE_NAME}_container || echo "No container to remove"
             '''
