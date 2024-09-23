@@ -61,7 +61,7 @@ pipeline {
             }
             steps {
                     sh '''
-                    docker run -p 5000:5000 ${IMAGE_NAME} || { echo "Docker run failed"; exit 1; }
+                    docker run -d -p 5000:5000 ${IMAGE_NAME} || { echo "Docker run failed"; exit 1; }
                     '''         
         }
     }
