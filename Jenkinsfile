@@ -3,37 +3,35 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'flask-sum-app'
+        VIRTUAL_ENV = 'myenv1'
     }
 
     stages {
         stage('Clone Repository') {
             steps {
                 dir('flask-sum-app') {
-                    checkout scm
-                    git 'https://github.com/Tanmoy009/flask-sum-app.git'
+                    checkout scm  // Only using checkout scm
                 }
             }
         }
 
         stage('Set up Python Environment') {
             steps {
-                withEnv(['VIRTUAL_ENV=myenv1']) {
-                    sh '''
-                    python3.11 -m venv myenv1 || { echo "Failed to create virtual environment"; exit 1; }
-                    pip install --upgrade pip  # Upgrade pip for compatibility
-                    pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
-                    '''
-                }
+                sh '''
+                python3.11 -m venv ${VIRTUAL_ENV} || { echo "Failed to create virtual environment"; exit 1; }
+                source ${VIRTUAL_ENV}/bin/activate
+                pip install --upgrade pip  # Upgrade pip for compatibility
+                pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
+                '''
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                withEnv(['VIRTUAL_ENV=myenv1']) {
-                    sh '''
-                    pytest test_app.py --disable-warnings || { echo "Unit tests failed"; exit 1; }
-                    '''
-                }
+                sh '''
+                source ${VIRTUAL_ENV}/bin/activate
+                pytest test_app.py --disable-warnings || { echo "Unit tests failed"; exit 1; }
+                '''
             }
         }
 
@@ -45,7 +43,7 @@ pipeline {
             }
             steps {
                 script {
-                    docker.build(file: 'Dockerfile', tag: "${IMAGE_NAME}") || { echo "Docker build failed"; exit 1; }
+                    docker.build("${IMAGE_NAME}", ".")  // Removed error handling here
                 }
             }
         }
@@ -58,7 +56,7 @@ pipeline {
             }
             steps {
                 script {
-                    def container = docker.run("-d -p 5000:5000 --name ${IMAGE_NAME}_container ${IMAGE_NAME}") || { echo "Failed to run Docker container"; exit 1; }
+                    def container = docker.run("-d -p 5000:5000 --name ${IMAGE_NAME}_container ${IMAGE_NAME}")
                     container.id
                 }
             }
@@ -69,7 +67,7 @@ pipeline {
         always {
             echo 'Cleaning up environment...'
             sh '''
-            rm -rf myenv1
+            rm -rf ${VIRTUAL_ENV}
             docker stop ${IMAGE_NAME}_container || echo "No running container to stop"
             docker rm ${IMAGE_NAME}_container || echo "No container to remove"
             '''
