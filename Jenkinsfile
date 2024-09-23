@@ -8,27 +8,32 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git 'https://github.com/Tanmoy009/flask-sum-app.git'
+                dir('flask-sum-app') {
+                    checkout scm
+                    git 'https://github.com/Tanmoy009/flask-sum-app.git'
+                }
             }
         }
 
         stage('Set up Python Environment') {
             steps {
-                sh '''
-                python3.11 -m venv myenv1 || { echo "Failed to create virtual environment"; exit 1; }
-                source myenv1/bin/activate
-                pip install --upgrade pip  # Upgrade pip for compatibility
-                pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
-                '''
+                withEnv(['VIRTUAL_ENV=myenv1']) {
+                    sh '''
+                    python3.11 -m venv myenv1 || { echo "Failed to create virtual environment"; exit 1; }
+                    pip install --upgrade pip  # Upgrade pip for compatibility
+                    pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
+                    '''
+                }
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                sh '''
-                source myenv1/bin/activate
-                pytest test_app.py --disable-warnings || { echo "Unit tests failed"; exit 1; }
-                '''
+                withEnv(['VIRTUAL_ENV=myenv1']) {
+                    sh '''
+                    pytest test_app.py --disable-warnings || { echo "Unit tests failed"; exit 1; }
+                    '''
+                }
             }
         }
 
@@ -40,7 +45,7 @@ pipeline {
             }
             steps {
                 script {
-                    docker.build("${IMAGE_NAME}") || { echo "Docker build failed"; exit 1; }
+                    docker.build(file: 'Dockerfile', tag: "${IMAGE_NAME}") || { echo "Docker build failed"; exit 1; }
                 }
             }
         }
@@ -52,9 +57,10 @@ pipeline {
                 }
             }
             steps {
-                sh """
-                docker run -d -p 5000:5000 --name ${IMAGE_NAME}_container ${IMAGE_NAME} || { echo "Failed to run Docker container"; exit 1; }
-                """
+                script {
+                    def container = docker.run("-d -p 5000:5000 --name ${IMAGE_NAME}_container ${IMAGE_NAME}") || { echo "Failed to run Docker container"; exit 1; }
+                    container.id
+                }
             }
         }
     }
