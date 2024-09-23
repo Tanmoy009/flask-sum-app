@@ -46,7 +46,7 @@ pipeline {
             }
             steps {
                 script {
-                    docker.build("${IMAGE_NAME}", ".")  // Removed error handling here
+                    docker.build("${IMAGE_NAME}", ".") ||{echo "docker bild fail"} #Removed error handling here
                 }
             }
         }
