@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = 'flask-sum-app'
-        VIRTUAL_ENV = 'myenv1'
+        VIRTUAL_ENV = 'myenv-new'
     }
 
     stages {
@@ -19,8 +19,8 @@ pipeline {
             steps {
                 sh '''
                 python3.11 -m venv ${VIRTUAL_ENV} || { echo "Failed to create virtual environment"; exit 1; }
-                source ${VIRTUAL_ENV}/bin/activate
-                pip install pip  # Upgrade pip for compatibility
+                source ${VIRTUAL_ENV}/bin/activate || {echo "failed to activate"}
+                pip install pip  
                 pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
 
                 '''
