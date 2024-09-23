@@ -20,7 +20,7 @@ pipeline {
                 sh '''
                 python3.11 -m venv ${VIRTUAL_ENV} || { echo "Failed to create virtual environment"; exit 1; }
                 source ${VIRTUAL_ENV}/bin/activate
-                pip install --upgrade pip  # Upgrade pip for compatibility
+                pip install pip  # Upgrade pip for compatibility
                 pip install -r requirements.txt || { echo "Failed to install requirements"; exit 1; }
 
                 '''
