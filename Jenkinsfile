@@ -18,7 +18,7 @@ pipeline {
         stage('Set up Python Environment') {
             steps {
                 sh '''
-                python3.11 --version
+                python3.11 --version >> test.txt
 
                 '''
             }
