@@ -49,7 +49,7 @@ pipeline {
                 sh '''
                 docker build -t ${IMAGE_NAME} . || { echo "Docker build failed"; exit 1; }
                 '''
-                }
+                
             }
         }
 
