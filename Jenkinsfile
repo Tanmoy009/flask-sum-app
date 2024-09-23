@@ -60,12 +60,11 @@ pipeline {
                 }
             }
             steps {
-                script {
-                    def container = docker.run("-d -p 5000:5000 --name ${IMAGE_NAME}_container ${IMAGE_NAME}")
-                    container.id
-                }
-            }
+                    sh '''
+                    docker run -p 5000:5000 --name ${IMAGE_NAME} || { echo "Docker run failed"; exit 1; }
+                    '''         
         }
+    }
     }
 
     post {
